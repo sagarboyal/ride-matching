@@ -21,7 +21,6 @@ public class GraphHopperService {
         this.webClient = WebClient.create("https://graphhopper.com/api/1");
         this.tripService = tripService;
     }
-
     public GraphHopperResponse getRoute(Long tripId) {
         TripResponse response = tripService.getTripById(tripId);
         try {
@@ -35,14 +34,49 @@ public class GraphHopperService {
                     .retrieve()
                     .bodyToMono(GraphHopperResponse.class)
                     .doOnError(e -> logger.error("Error calling GraphHopper API: {}", e.getMessage()))
-                    .block(); // still blocking for simplicity
+                    .block();
         } catch (Exception e) {
             logger.error("Failed to get route for coordinates: [{},{}] to [{},{}]. Error: {}",
                     response.getPickupLat(), response.getPickupLng(),
                     response.getDropLat(), response.getDropLng(),
-                    e.getMessage()); // only log error message
+                    e.getMessage());
+            return null;
+        }
+    }
+
+    public GraphHopperResponse getRouteWithWaypoints(
+            double originLat, double originLng,
+            double pickupLat, double pickupLng,
+            double dropLat, double dropLng,
+            double destinationLat, double destinationLng) {
+
+        try {
+            return webClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/route")
+                            .queryParam("point", originLat + "," + originLng)
+                            .queryParam("point", pickupLat + "," + pickupLng)
+                            .queryParam("point", dropLat + "," + dropLng)
+                            .queryParam("point", destinationLat + "," + destinationLng)
+                            .queryParam("vehicle", "car")
+                            .queryParam("key", apiKey)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(GraphHopperResponse.class)
+                    .doOnError(e -> logger.error("Error calling GraphHopper API with waypoints: {}", e.getMessage()))
+                    .map(route -> {
+                        if (route.paths() != null && !route.paths().isEmpty()) {
+                            logger.info("Route distance: {} meters", route.paths().get(0).distance());
+                            String polyline = route.paths().get(0).points(); // later for overlapping calculation
+                        }
+                        return route;
+                    })
+                    .block();
+        } catch (Exception e) {
+            logger.error("Failed to get route with waypoints: [{}], [{}], [{}], [{}]. Error: {}",
+                    originLat, originLng, pickupLat + "," + pickupLng, dropLat + "," + dropLng, e.getMessage());
             return null;
         }
     }
 
 }
+
