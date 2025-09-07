@@ -5,13 +5,12 @@ import com.main.ridematching.dtos.TripResponse;
 import com.main.ridematching.service.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/trips")
+@RequestMapping("/trips")
 @RequiredArgsConstructor
 public class TripController {
     private final TripService tripService;
@@ -19,5 +18,10 @@ public class TripController {
     @PostMapping
     public ResponseEntity<TripResponse> createTrip(@RequestBody TripRequest tripRequest) {
         return ResponseEntity.ok(tripService.createTrip(tripRequest));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TripResponse>> getTrips() {
+        return ResponseEntity.ok(tripService.getTrips());
     }
 }

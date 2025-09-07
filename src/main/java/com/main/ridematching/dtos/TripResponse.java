@@ -12,9 +12,11 @@ import java.time.Instant;
 @NoArgsConstructor
 @Builder
 public class TripResponse {
+    private Long id;
     private double pickupLat;
     private double pickupLng;
     private double dropLat;
     private double dropLng;
     public Instant departureTime;
+    public String routes;
 }
