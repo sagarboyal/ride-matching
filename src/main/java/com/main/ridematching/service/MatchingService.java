@@ -21,8 +21,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MatchingService {
-
-    private static final Logger logger = LoggerFactory.getLogger(MatchingService.class);
     private static final long TIME_WINDOW_MINUTES = 30;
     private static final double MAX_DEVIATION_PERCENTAGE = 0.15;
     private static final double OVERLAP_PROXIMITY_METERS = 150.0;

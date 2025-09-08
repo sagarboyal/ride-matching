@@ -5,6 +5,7 @@ import com.main.ridematching.dtos.TripResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -21,6 +22,8 @@ public class GraphHopperService {
         this.webClient = WebClient.create("https://graphhopper.com/api/1");
         this.tripService = tripService;
     }
+
+    @Cacheable(value = "routes", key = "#tripId")
     public GraphHopperResponse getRoute(Long tripId) {
         TripResponse response = tripService.getTripById(tripId);
         try {
@@ -44,6 +47,10 @@ public class GraphHopperService {
         }
     }
 
+    @Cacheable(
+            value = "routes",
+            key = "'origin:' + #originLat + ',' + #originLng + ':dest:' + #destinationLat + ',' + #destinationLng"
+    )
     public GraphHopperResponse getRouteWithWaypoints(
             double originLat, double originLng,
             double pickupLat, double pickupLng,
@@ -66,7 +73,6 @@ public class GraphHopperService {
                     .map(route -> {
                         if (route.paths() != null && !route.paths().isEmpty()) {
                             logger.info("Route distance: {} meters", route.paths().get(0).distance());
-                            String polyline = route.paths().get(0).points(); // later for overlapping calculation
                         }
                         return route;
                     })
