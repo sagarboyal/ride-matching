@@ -1,9 +1,11 @@
 package com.main.ridematching.serviceImpl;
 
+import com.main.ridematching.dtos.GraphHopperGeocodeResponse;
 import com.main.ridematching.dtos.TripRequest;
 import com.main.ridematching.dtos.TripResponse;
 import com.main.ridematching.entity.Trip;
 import com.main.ridematching.repo.TripRepo;
+import com.main.ridematching.service.GraphHopperService;
 import com.main.ridematching.service.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.List;
 public class TripServiceImpl implements TripService {
 
     private final TripRepo tripRepo;
+    private final GraphHopperService graphHopperService;
 
     @Override
     public TripResponse createTrip(TripRequest tripRequest) {
@@ -51,6 +54,8 @@ public class TripServiceImpl implements TripService {
                         trip.getDropLat(),
                         trip.getDropLng()
                 ))
+                .pickupLocation(graphHopperService.getLocationName(trip.getPickupLat(), trip.getPickupLng()))
+                .dropLocation(graphHopperService.getLocationName(trip.getDropLat(), trip.getDropLng()))
                 .build();
     }
 

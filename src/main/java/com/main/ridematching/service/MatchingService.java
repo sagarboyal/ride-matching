@@ -8,8 +8,6 @@ import com.main.ridematching.entity.Trip;
 import com.main.ridematching.repo.TripRepo;
 import com.main.ridematching.utility.Haversine;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;

@@ -1,7 +1,10 @@
 package com.main.ridematching.service;
 
+import com.main.ridematching.dtos.GraphHopperGeocodeResponse;
 import com.main.ridematching.dtos.GraphHopperResponse;
 import com.main.ridematching.dtos.TripResponse;
+import com.main.ridematching.entity.Trip;
+import com.main.ridematching.repo.TripRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,17 +18,17 @@ public class GraphHopperService {
     private static final Logger logger = LoggerFactory.getLogger(GraphHopperService.class);
     private final WebClient webClient;
     private final String apiKey;
-    private final TripService tripService;
+    private final TripRepo tripRepo;
 
-    public GraphHopperService(@Value("${graphhopper.key}") String apiKey, TripService tripService) {
+    public GraphHopperService(@Value("${graphhopper.key}") String apiKey, TripRepo tripRepo) {
         this.apiKey = apiKey;
         this.webClient = WebClient.create("https://graphhopper.com/api/1");
-        this.tripService = tripService;
+        this.tripRepo = tripRepo;
     }
 
     @Cacheable(value = "routes", key = "#tripId")
     public GraphHopperResponse getRoute(Long tripId) {
-        TripResponse response = tripService.getTripById(tripId);
+        Trip response = tripRepo.findById(tripId).get();
         try {
             return webClient.get()
                     .uri(uriBuilder -> uriBuilder.path("/route")
@@ -81,6 +84,34 @@ public class GraphHopperService {
             logger.error("Failed to get route with waypoints: [{}], [{}], [{}], [{}]. Error: {}",
                     originLat, originLng, pickupLat + "," + pickupLng, dropLat + "," + dropLng, e.getMessage());
             return null;
+        }
+    }
+
+    @Cacheable(
+            value = "location",
+            key = "'lat:' + #lat + ',lng:' + #lng"
+    )
+    public String getLocationName(double lat, double lng) {
+        try {
+            GraphHopperGeocodeResponse response = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/geocode")
+                            .queryParam("reverse", "true")
+                            .queryParam("point", lat + "," + lng)
+                            .queryParam("key", apiKey)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(GraphHopperGeocodeResponse.class)
+                    .block();
+
+            if (response != null && !response.hits().isEmpty()) {
+                return response.hits().get(0).name() + ", " +
+                        response.hits().get(0).state() + ", " +
+                        response.hits().get(0).country();
+            }
+            return "Unknown location";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
     }
 

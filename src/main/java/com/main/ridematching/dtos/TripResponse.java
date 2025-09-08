@@ -19,4 +19,6 @@ public class TripResponse {
     private double dropLng;
     public Instant departureTime;
     public String routes;
+    public String pickupLocation;
+    public String dropLocation;
 }
