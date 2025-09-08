@@ -2,7 +2,6 @@ package com.main.ridematching.service;
 
 import com.main.ridematching.dtos.GraphHopperGeocodeResponse;
 import com.main.ridematching.dtos.GraphHopperResponse;
-import com.main.ridematching.dtos.TripResponse;
 import com.main.ridematching.entity.Trip;
 import com.main.ridematching.repo.TripRepo;
 import org.slf4j.Logger;

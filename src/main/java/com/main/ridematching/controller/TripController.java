@@ -3,6 +3,7 @@ package com.main.ridematching.controller;
 import com.main.ridematching.dtos.MatchResult;
 import com.main.ridematching.dtos.TripRequest;
 import com.main.ridematching.dtos.TripResponse;
+import com.main.ridematching.dtos.TripUpdateRequest;
 import com.main.ridematching.service.MatchingService;
 import com.main.ridematching.service.TripService;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,16 @@ public class TripController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping
+    public ResponseEntity<TripResponse> updateTrip(@RequestBody TripUpdateRequest tripRequest) {
+        return ResponseEntity.ok(tripService.updateTrip(tripRequest));
+    }
+
+    @DeleteMapping("/{tripId}")
+    public ResponseEntity<Void> deleteTrip(@PathVariable Long tripId) {
+        tripService.deleteTrip(tripId);
+        return ResponseEntity.noContent().build();
     }
 }
