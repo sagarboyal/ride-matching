@@ -1,5 +1,6 @@
 package com.main.ridematching.service;
 
+import com.main.ridematching.dtos.MatchResponse;
 import com.main.ridematching.dtos.TripRequest;
 import com.main.ridematching.dtos.TripResponse;
 import com.main.ridematching.dtos.TripUpdateRequest;
@@ -12,4 +13,5 @@ public interface TripService {
     TripResponse getTripById(long tripId);
     TripResponse updateTrip(TripUpdateRequest tripRequest);
     void deleteTrip(Long tripId);
+    MatchResponse findMatching(Long tripId);
 }

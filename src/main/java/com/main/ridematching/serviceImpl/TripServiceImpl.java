@@ -1,11 +1,10 @@
 package com.main.ridematching.serviceImpl;
 
-import com.main.ridematching.dtos.TripRequest;
-import com.main.ridematching.dtos.TripResponse;
-import com.main.ridematching.dtos.TripUpdateRequest;
+import com.main.ridematching.dtos.*;
 import com.main.ridematching.entity.Trip;
 import com.main.ridematching.repo.TripRepo;
 import com.main.ridematching.service.GraphHopperService;
+import com.main.ridematching.service.MatchingService;
 import com.main.ridematching.service.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ public class TripServiceImpl implements TripService {
 
     private final TripRepo tripRepo;
     private final GraphHopperService graphHopperService;
+    private final MatchingService matchingService;
 
     @Override
     public TripResponse createTrip(TripRequest tripRequest) {
@@ -61,6 +61,17 @@ public class TripServiceImpl implements TripService {
         tripRepo.delete(trip);
     }
 
+    @Override
+    public MatchResponse findMatching(Long tripId) {
+        List<MatchResult> matches = matchingService.findMatches(tripId);
+        TripResponse currTrip = getTripById(tripId);
+        List<MatchingTrips> suggestions = matches.stream().map(this::convertToMatching).toList();
+        return MatchResponse.builder()
+                .trip(currTrip)
+                .suggestedMatches(suggestions)
+                .build();
+    }
+
     private TripResponse convertToResponse(Trip trip) {
         return TripResponse.builder()
                 .id(trip.getId())
@@ -88,5 +99,15 @@ public class TripServiceImpl implements TripService {
                 tripRequest.getDropLat(),
                 tripRequest.getDropLng(),
                 tripRequest.getDepartureTime());
+    }
+
+    private MatchingTrips convertToMatching(MatchResult matchResult) {
+        TripResponse response = getTripById(matchResult.matchingRiderTripId());
+        return MatchingTrips.builder()
+                .trip(response)
+                .matchPercentage(matchResult.matchPercentage())
+                .overlapPercentage(matchResult.overlapPercentage())
+                .additionalDistanceKm(matchResult.additionalDistanceMeters() / 1000.0)
+                .build();
     }
 }
